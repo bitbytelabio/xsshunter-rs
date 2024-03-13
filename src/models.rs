@@ -8,3 +8,34 @@ pub struct Setting {
     pub key: String,
     pub value: String,
 }
+
+#[derive(Debug, FromRow, PartialEq, Clone, Serialize)]
+pub struct CollectedPage {
+    pub id: Uuid,
+    pub uri: String,
+    pub html: String,
+}
+
+#[derive(Debug, FromRow, PartialEq, Clone, Serialize)]
+pub struct InjectionRequest {
+    pub id: Uuid,
+    pub request: String,
+    pub injection_key: String,
+}
+
+#[derive(Debug, FromRow, PartialEq, Clone, Serialize)]
+pub struct PayloadFireResult {
+    pub id: Uuid,
+    pub url: String,
+    pub ip_address: String,
+    pub referrer: String,
+    pub user_agent: String,
+    pub cookie: String,
+    pub title: String,
+    pub dom: String,
+    pub text: String,
+    pub origin: String,
+    pub screenshot_id: String,
+    pub was_iframe: bool,
+    pub browser_timestamp: i64,
+}

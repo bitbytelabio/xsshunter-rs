@@ -7,6 +7,7 @@ use sqlx::postgres::PgPool;
 use tracing::{error, info, warn};
 use uuid::Uuid;
 
+pub mod collected_page;
 pub mod settings;
 
 async fn initialize_configs(pool: &PgPool) -> Result<(), sqlx::Error> {

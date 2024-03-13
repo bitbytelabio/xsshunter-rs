@@ -92,6 +92,11 @@ async fn initialize_correlation_api(pool: &PgPool) -> Result<(), sqlx::Error> {
 }
 
 pub async fn initialize_database(pool: &PgPool) {
+    sqlx::migrate!("./migrations")
+        .run(pool)
+        .await
+        .expect("Failed to run migrations");
+
     match initialize_configs(&pool).await {
         Ok(_) => info!("Session secret generated successfully!"),
         Err(e) => {
@@ -111,7 +116,8 @@ pub async fn initialize_database(pool: &PgPool) {
     match initialize_users(&pool).await {
         Ok(_) => info!("Admin user generated successfully!"),
         Err(e) => {
-            error!("Error generating admin user: {:?}", e)
+            error!("Error generating admin user: {:?}", e);
+            exit(1)
         }
     }
 }
@@ -155,9 +161,9 @@ mod tests {
 
         let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
         let pool = PgPoolOptions::new().connect(&database_url).await?;
-        let hash = hash("password123", DEFAULT_COST).unwrap();
+        let _hash = hash("password123", DEFAULT_COST).unwrap();
 
-        setup_admin_user(&pool, "password123").await?;
+        initialize_users(&pool).await?;
 
         let row: Setting = sqlx::query_as("SELECT * FROM settings WHERE key = $1")
             .bind(&crate::ADMIN_PASSWORD_SETTINGS_KEY)

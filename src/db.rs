@@ -1,4 +1,5 @@
-use crate::SESSION_SECRET_KEY;
+use crate::{ADMIN_PASSWORD_SETTINGS_KEY, SESSION_SECRET_KEY};
+use bcrypt::{hash, DEFAULT_COST};
 use rand::Rng;
 use sqlx::postgres::PgPool;
 use tracing::{debug, info, warn};
@@ -45,17 +46,46 @@ pub async fn initialize_configs(pool: &PgPool) -> Result<(), sqlx::Error> {
     Ok(())
 }
 
+pub async fn setup_admin_user(pool: &PgPool, password: &str) -> Result<(), sqlx::Error> {
+    let exists: (bool,) = sqlx::query_as("SELECT EXISTS(SELECT 1 FROM settings WHERE key = $1)")
+        .bind(ADMIN_PASSWORD_SETTINGS_KEY)
+        .fetch_one(pool)
+        .await?;
+
+    if exists.0 {
+        info!("Admin user already set, skipping generation...");
+        return Ok(());
+    }
+
+    warn!("No admin user set, generating one now...");
+
+    let bcrypt_hash = hash(password, DEFAULT_COST).unwrap();
+
+    sqlx::query("INSERT INTO settings (id, key, value) VALUES ($1, $2, $3)")
+        .bind(Uuid::new_v4())
+        .bind(ADMIN_PASSWORD_SETTINGS_KEY)
+        .bind(bcrypt_hash)
+        .execute(pool)
+        .await?;
+
+    info!("Admin user generated successfully!");
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
+    use test_log::test;
+
     use super::*;
     use crate::models::Setting;
+
     use sqlx::postgres::PgPoolOptions;
     use sqlx::Error;
     use std::env;
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_generate_session_secret() -> Result<(), Error> {
         dotenv::dotenv().ok();
-        tracing_subscriber::fmt::init();
 
         let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
@@ -75,4 +105,7 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn generates_admin_user_with_valid_password() {}
 }

@@ -3,6 +3,7 @@
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 
+mod app;
 mod db;
 mod models;
 mod utils;

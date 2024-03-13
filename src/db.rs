@@ -7,6 +7,8 @@ use sqlx::postgres::PgPool;
 use tracing::{error, info, warn};
 use uuid::Uuid;
 
+pub mod settings;
+
 async fn initialize_configs(pool: &PgPool) -> Result<(), sqlx::Error> {
     let exists: (bool,) = sqlx::query_as("SELECT EXISTS(SELECT 1 FROM settings WHERE key = $1)")
         .bind(SESSION_SECRET_KEY)

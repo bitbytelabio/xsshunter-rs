@@ -1,4 +1,4 @@
-# xsshunter-rs
+# XSS Hunter (Rust Version)
 
 ## Environment Variables
 ```

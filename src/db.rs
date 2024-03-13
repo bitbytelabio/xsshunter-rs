@@ -80,6 +80,7 @@ mod tests {
     use super::*;
     use crate::models::Setting;
 
+    use core::hash;
     use sqlx::postgres::PgPoolOptions;
     use sqlx::Error;
     use std::env;
@@ -106,6 +107,24 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn generates_admin_user_with_valid_password() {}
+    #[test(tokio::test)]
+    async fn generates_admin_user_with_valid_password() -> Result<(), Error> {
+        dotenv::dotenv().ok();
+
+        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        let pool = PgPoolOptions::new().connect(&database_url).await?;
+        let hash = hash("password123", DEFAULT_COST).unwrap();
+
+        setup_admin_user(&pool, "password123").await?;
+
+        let row: Setting = sqlx::query_as("SELECT * FROM settings WHERE key = $1")
+            .bind(&crate::ADMIN_PASSWORD_SETTINGS_KEY)
+            .fetch_one(&pool)
+            .await?;
+
+        assert_eq!(row.key, crate::ADMIN_PASSWORD_SETTINGS_KEY);
+        // assert_eq!(row.value, hash);
+
+        Ok(())
+    }
 }

@@ -7,6 +7,7 @@ pub struct App {
     pub screenshots_dir: String,
     pub screenshot_filename_regex: Regex,
     listener: TcpListener,
+    router: Router,
 }
 
 impl App {

@@ -28,6 +28,7 @@ bcrypt = "0.15.0"
 chrono = { version = "0.4.35", features = ["serde"] }
 regex = "1.10.3"
 tower-http = "0.5.2"
+thiserror = "1.0.58"
 
 [dev-dependencies]
 test-log = { version = "0.2.15", features = ["trace", "tracing-subscriber"] }

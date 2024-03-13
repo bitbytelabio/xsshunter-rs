@@ -16,8 +16,11 @@ sqlx = { version = "0.7.4", features = [
     "time",
     "chrono",
     "runtime-tokio-rustls",
+    "uuid",
 ] }
 tokio = { version = "1.36.0", features = ["full", "tracing"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
 rand = "0.8.5"
+uuid = { version = "1.7.0", features = ["v4", "serde"] }
+lazy_static = "1.4.0"

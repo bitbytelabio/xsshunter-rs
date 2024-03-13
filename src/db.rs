@@ -1,6 +1,6 @@
 use std::process::exit;
 
-use crate::utils::get_secure_random_string;
+use crate::utils::{get_hashed_password, get_secure_random_string};
 use crate::{ADMIN_PASSWORD_SETTINGS_KEY, CORRELATION_API_SECRET_SETTINGS_KEY, SESSION_SECRET_KEY};
 use bcrypt::{hash, DEFAULT_COST};
 use sqlx::postgres::PgPool;
@@ -50,7 +50,7 @@ async fn initialize_users(pool: &PgPool) -> Result<(), sqlx::Error> {
 
     warn!("Admin user generated with password: {}", password);
 
-    let bcrypt_hash = hash(password, DEFAULT_COST).expect("Failed to hash password");
+    let bcrypt_hash = get_hashed_password(&password).expect("Failed to hash password");
 
     sqlx::query("INSERT INTO settings (id, key, value) VALUES ($1, $2, $3)")
         .bind(Uuid::new_v4())

@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 

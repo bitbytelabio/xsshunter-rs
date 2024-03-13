@@ -1,5 +1,9 @@
+use sqlx::postgres::PgPoolOptions;
+use std::env;
+
 mod db;
 mod models;
+mod utils;
 
 const ADMIN_PASSWORD_SETTINGS_KEY: &'static str = "ADMIN_PASSWORD";
 const API_BASE_PATH: &'static str = "api/v1";
@@ -13,4 +17,9 @@ const CSRF_HEADER_NAME: &'static str = "X-CSRF-Buster";
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
+    tracing_subscriber::fmt::init();
+
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool = PgPoolOptions::new().connect(&database_url).await.unwrap();
+    db::initialize_database(&pool).await;
 }

@@ -1,21 +1,13 @@
-use crate::{ADMIN_PASSWORD_SETTINGS_KEY, SESSION_SECRET_KEY};
+use std::process::exit;
+
+use crate::utils::get_secure_random_string;
+use crate::{ADMIN_PASSWORD_SETTINGS_KEY, CORRELATION_API_SECRET_SETTINGS_KEY, SESSION_SECRET_KEY};
 use bcrypt::{hash, DEFAULT_COST};
-use rand::Rng;
 use sqlx::postgres::PgPool;
-use tracing::{debug, info, warn};
+use tracing::{error, info, warn};
 use uuid::Uuid;
 
-/// Generates and inserts a session secret key into a PostgreSQL database table if it does not already exist.
-///
-/// # Arguments
-///
-/// * `pool` - A reference to a `PgPool` object representing the connection pool to the PostgreSQL database.
-///
-/// # Returns
-///
-/// * `Ok(())` - If the session secret key already exists in the database or if the function successfully generates and inserts the session secret key.
-/// * `Err(sqlx::Error)` - If there is an error executing the SQL queries or interacting with the database.
-pub async fn initialize_configs(pool: &PgPool) -> Result<(), sqlx::Error> {
+async fn initialize_configs(pool: &PgPool) -> Result<(), sqlx::Error> {
     let exists: (bool,) = sqlx::query_as("SELECT EXISTS(SELECT 1 FROM settings WHERE key = $1)")
         .bind(SESSION_SECRET_KEY)
         .fetch_one(pool)
@@ -26,13 +18,9 @@ pub async fn initialize_configs(pool: &PgPool) -> Result<(), sqlx::Error> {
         return Ok(());
     }
 
-    warn!("No session secret set, generating one now...");
+    info!("No session secret set, generating one now...");
 
-    let secure_random_string: String = rand::thread_rng()
-        .sample_iter(&rand::distributions::Alphanumeric)
-        .take(64)
-        .map(char::from)
-        .collect();
+    let secure_random_string = get_secure_random_string(32);
 
     sqlx::query("INSERT INTO settings (id, key, value) VALUES ($1, $2, $3)")
         .bind(Uuid::new_v4())
@@ -46,7 +34,7 @@ pub async fn initialize_configs(pool: &PgPool) -> Result<(), sqlx::Error> {
     Ok(())
 }
 
-pub async fn setup_admin_user(pool: &PgPool, password: &str) -> Result<(), sqlx::Error> {
+async fn initialize_users(pool: &PgPool) -> Result<(), sqlx::Error> {
     let exists: (bool,) = sqlx::query_as("SELECT EXISTS(SELECT 1 FROM settings WHERE key = $1)")
         .bind(ADMIN_PASSWORD_SETTINGS_KEY)
         .fetch_one(pool)
@@ -57,9 +45,12 @@ pub async fn setup_admin_user(pool: &PgPool, password: &str) -> Result<(), sqlx:
         return Ok(());
     }
 
-    warn!("No admin user set, generating one now...");
+    info!("No admin user set, generating one now...");
+    let password = get_secure_random_string(32);
 
-    let bcrypt_hash = hash(password, DEFAULT_COST).unwrap();
+    warn!("Admin user generated with password: {}", password);
+
+    let bcrypt_hash = hash(password, DEFAULT_COST).expect("Failed to hash password");
 
     sqlx::query("INSERT INTO settings (id, key, value) VALUES ($1, $2, $3)")
         .bind(Uuid::new_v4())
@@ -73,6 +64,58 @@ pub async fn setup_admin_user(pool: &PgPool, password: &str) -> Result<(), sqlx:
     Ok(())
 }
 
+async fn initialize_correlation_api(pool: &PgPool) -> Result<(), sqlx::Error> {
+    let exists: (bool,) = sqlx::query_as("SELECT EXISTS(SELECT 1 FROM settings WHERE key = $1)")
+        .bind(CORRELATION_API_SECRET_SETTINGS_KEY)
+        .fetch_one(pool)
+        .await?;
+
+    if exists.0 {
+        info!("Correlation API secret already set, skipping generation...");
+        return Ok(());
+    }
+
+    info!("No correlation API secret set, generating one now...");
+
+    let api_key = get_secure_random_string(64);
+
+    sqlx::query("INSERT INTO settings (id, key, value) VALUES ($1, $2, $3)")
+        .bind(Uuid::new_v4())
+        .bind(CORRELATION_API_SECRET_SETTINGS_KEY)
+        .bind(api_key)
+        .execute(pool)
+        .await?;
+
+    info!("Correlation API secret generated successfully!");
+
+    Ok(())
+}
+
+pub async fn initialize_database(pool: &PgPool) {
+    match initialize_configs(&pool).await {
+        Ok(_) => info!("Session secret generated successfully!"),
+        Err(e) => {
+            error!("Error generating session secret: {:?}", e);
+            exit(1)
+        }
+    }
+
+    match initialize_correlation_api(&pool).await {
+        Ok(_) => info!("Correlation API secret generated successfully!"),
+        Err(e) => {
+            error!("Error generating correlation API secret: {:?}", e);
+            exit(1)
+        }
+    }
+
+    match initialize_users(&pool).await {
+        Ok(_) => info!("Admin user generated successfully!"),
+        Err(e) => {
+            error!("Error generating admin user: {:?}", e)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use test_log::test;
@@ -80,7 +123,6 @@ mod tests {
     use super::*;
     use crate::models::Setting;
 
-    use core::hash;
     use sqlx::postgres::PgPoolOptions;
     use sqlx::Error;
     use std::env;
@@ -124,6 +166,25 @@ mod tests {
 
         assert_eq!(row.key, crate::ADMIN_PASSWORD_SETTINGS_KEY);
         // assert_eq!(row.value, hash);
+
+        Ok(())
+    }
+
+    #[test(tokio::test)]
+    async fn generates_correlation_api_secret() -> Result<(), Error> {
+        dotenv::dotenv().ok();
+
+        let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        let pool = PgPoolOptions::new().connect(&database_url).await?;
+
+        initialize_correlation_api(&pool).await?;
+
+        let row: Setting = sqlx::query_as("SELECT * FROM settings WHERE key = $1")
+            .bind(&crate::CORRELATION_API_SECRET_SETTINGS_KEY)
+            .fetch_one(&pool)
+            .await?;
+
+        assert_eq!(row.key, crate::CORRELATION_API_SECRET_SETTINGS_KEY);
 
         Ok(())
     }

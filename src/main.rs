@@ -4,6 +4,7 @@ use sqlx::postgres::PgPoolOptions;
 use std::env;
 
 mod app;
+mod config;
 mod db;
 mod models;
 mod utils;

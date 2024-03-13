@@ -1,9 +1,10 @@
 use std::process::exit;
 
+use crate::errors::Result;
 use crate::utils::{get_hashed_password, get_secure_random_string};
 use crate::{ADMIN_PASSWORD_SETTINGS_KEY, CORRELATION_API_SECRET_SETTINGS_KEY, SESSION_SECRET_KEY};
 use bcrypt::{hash, DEFAULT_COST};
-use sqlx::postgres::PgPool;
+use sqlx::postgres::{PgPool, PgPoolOptions};
 use tracing::{error, info, warn};
 use uuid::Uuid;
 
@@ -12,7 +13,22 @@ pub mod injection_requests;
 pub mod payload_fire_results;
 pub mod settings;
 
-async fn initialize_configs(pool: &PgPool) -> Result<(), sqlx::Error> {
+pub async fn create_connection_pool() -> Result<PgPool> {
+    let max_conn = std::env::var("MAX_DB_CONNECTIONS")
+        .unwrap_or_else(|_| "10".to_string())
+        .parse::<u32>()
+        .expect("MAX_DB_CONNECTIONS must be a number");
+
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    let pool = PgPoolOptions::new()
+        .max_connections(max_conn)
+        .connect(&database_url)
+        .await?;
+    Ok(pool)
+}
+
+async fn initialize_configs(pool: &PgPool) -> Result<()> {
     let exists: (bool,) = sqlx::query_as("SELECT EXISTS(SELECT 1 FROM settings WHERE key = $1)")
         .bind(SESSION_SECRET_KEY)
         .fetch_one(pool)
@@ -39,7 +55,7 @@ async fn initialize_configs(pool: &PgPool) -> Result<(), sqlx::Error> {
     Ok(())
 }
 
-async fn initialize_users(pool: &PgPool) -> Result<(), sqlx::Error> {
+async fn initialize_users(pool: &PgPool) -> Result<()> {
     let exists: (bool,) = sqlx::query_as("SELECT EXISTS(SELECT 1 FROM settings WHERE key = $1)")
         .bind(ADMIN_PASSWORD_SETTINGS_KEY)
         .fetch_one(pool)
@@ -69,7 +85,7 @@ async fn initialize_users(pool: &PgPool) -> Result<(), sqlx::Error> {
     Ok(())
 }
 
-async fn initialize_correlation_api(pool: &PgPool) -> Result<(), sqlx::Error> {
+async fn initialize_correlation_api(pool: &PgPool) -> Result<()> {
     let exists: (bool,) = sqlx::query_as("SELECT EXISTS(SELECT 1 FROM settings WHERE key = $1)")
         .bind(CORRELATION_API_SECRET_SETTINGS_KEY)
         .fetch_one(pool)
@@ -135,10 +151,9 @@ mod tests {
     use crate::models::Setting;
 
     use sqlx::postgres::PgPoolOptions;
-    use sqlx::Error;
     use std::env;
     #[test(tokio::test)]
-    async fn test_generate_session_secret() -> Result<(), Error> {
+    async fn test_generate_session_secret() -> Result<()> {
         dotenv::dotenv().ok();
 
         let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
@@ -161,7 +176,7 @@ mod tests {
     }
 
     #[test(tokio::test)]
-    async fn generates_admin_user_with_valid_password() -> Result<(), Error> {
+    async fn generates_admin_user_with_valid_password() -> Result<()> {
         dotenv::dotenv().ok();
 
         let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
@@ -182,7 +197,7 @@ mod tests {
     }
 
     #[test(tokio::test)]
-    async fn generates_correlation_api_secret() -> Result<(), Error> {
+    async fn generates_correlation_api_secret() -> Result<()> {
         dotenv::dotenv().ok();
 
         let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");

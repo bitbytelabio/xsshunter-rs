@@ -23,8 +23,4 @@ const CSRF_HEADER_NAME: &'static str = "X-CSRF-Buster";
 async fn main() {
     dotenv::dotenv().ok();
     tracing_subscriber::fmt::init();
-
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let pool = PgPoolOptions::new().connect(&database_url).await.unwrap();
-    db::initialize_database(&pool).await;
 }

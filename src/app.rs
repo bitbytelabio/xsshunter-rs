@@ -1,4 +1,5 @@
 use crate::{db, errors::Result};
+use axum::http::Method;
 use axum::routing;
 use axum::routing::post;
 use axum::Router;
@@ -6,6 +7,7 @@ use regex::Regex;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 use tokio::net::TcpListener;
+use tower_http::cors::{Any, CorsLayer};
 
 use self::handlers::page_callback_handler;
 
@@ -39,9 +41,14 @@ pub async fn run() {
 
     db::initialize_database(&pool).await;
 
+    let cors = CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST])
+        .allow_origin(Any);
+
     let app = Router::new()
         .merge(routes::create_routes())
         // .merge(routes::create_api_routes())
+        .layer(cors)
         .with_state(pool);
 
     match axum::serve(listener, app).await {

@@ -8,8 +8,9 @@ use axum::{
     routing::{delete, get, post, put},
     Router,
 };
+use sqlx::PgPool;
 
-pub fn create_routes() -> Router {
+pub fn create_routes() -> Router<PgPool> {
     let routes = Router::new()
         .route("/page_callback", post(page_callback_handler))
         .route("/js_callback", post(js_callback_handler))
@@ -27,15 +28,15 @@ pub fn create_api_routes() -> Router {
             get(|| async { Html("Correlation API".to_string()) }),
         )
         .route(
-            "login",
+            "/login",
             get(|| async { Html("Correlation API".to_string()) }),
         )
         .route(
-            "auth-check",
+            "/auth-check",
             get(|| async { Html("Correlation API".to_string()) }),
         )
         .route(
-            "payloadfires",
+            "/payloadfires",
             get(|| async { Html("Correlation API".to_string()) }),
         );
     let routes = Router::new().nest(API_BASE_PATH, api);

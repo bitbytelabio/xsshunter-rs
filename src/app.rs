@@ -1,10 +1,13 @@
 use crate::{db, errors::Result};
 use axum::routing;
+use axum::routing::post;
 use axum::Router;
 use regex::Regex;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 use tokio::net::TcpListener;
+
+use self::handlers::page_callback_handler;
 
 mod handlers;
 mod routes;
@@ -37,9 +40,9 @@ pub async fn run() {
     db::initialize_database(&pool).await;
 
     let app = Router::new()
-        .with_state(pool)
         .merge(routes::create_routes())
-        .merge(routes::create_api_routes());
+        // .merge(routes::create_api_routes())
+        .with_state(pool);
 
     match axum::serve(listener, app).await {
         Ok(_) => {}

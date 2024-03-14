@@ -13,3 +13,12 @@ CONFIG_DIR
 GET http://localhost:3000/ HTTP/1.1
 content-type: application/json
 ```
+
+```http
+POST http://localhost:3000/page_callback HTTP/1.1
+content-type: application/json
+{
+    "uri": "https://google.com",
+    "html": "hello"
+}
+```

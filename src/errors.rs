@@ -10,7 +10,7 @@ pub enum Error {
     Env(#[from] std::env::VarError),
     #[error("Regex error: {0}")]
     Regex(#[from] regex::Error),
-    #[error("parse int error: {0}")]
+    #[error("Parse int error: {0}")]
     Parse(#[from] std::num::ParseIntError),
     #[error("Error: {0}")]
     Other(String),

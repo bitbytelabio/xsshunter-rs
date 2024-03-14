@@ -3,6 +3,7 @@
         "CHAINLOAD",
         "chrono",
         "dotenv",
-        "ossp"
+        "ossp",
+        "xsshunter"
     ]
 }

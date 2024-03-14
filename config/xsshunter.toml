@@ -1,0 +1,14 @@
+[log]
+level = "info"
+file = "logs/xsshunter.log"
+
+[log.tracing]
+thread_name = false
+file = false
+line_number = false
+target = false
+pretty = false
+
+[server]
+host = "0.0.0.0"
+port = 8080

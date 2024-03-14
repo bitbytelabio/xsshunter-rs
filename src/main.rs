@@ -7,6 +7,7 @@ mod app;
 mod config;
 mod db;
 mod errors;
+mod logs;
 mod models;
 mod utils;
 
@@ -19,8 +20,14 @@ const SEND_ALERT_EMAILS_KEY: &'static str = "SEND_ALERT_EMAILS";
 const SESSION_SECRET_KEY: &'static str = "SESSION_SECRET";
 const CSRF_HEADER_NAME: &'static str = "X-CSRF-Buster";
 
+lazy_static::lazy_static!(
+     static ref CONFIG: config::Settings = config::Settings
+        ::new()
+        .expect("Failed to load config, CONFIG_DIR must be set");
+);
+
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
-    tracing_subscriber::fmt::init();
+    logs::start_logging();
 }

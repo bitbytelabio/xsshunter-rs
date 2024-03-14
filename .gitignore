@@ -19,3 +19,6 @@ Cargo.lock
 
 # Ignore .env file containing credentials, API keys, etc
 .env
+
+# Ignore log files
+logs/*.log

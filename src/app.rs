@@ -22,7 +22,6 @@ impl App {
         let screenshot_filename_regex = Regex::new(
             r"^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}\.png$",
         )?;
-
         let pool = db::create_connection_pool().await?;
 
         db::initialize_database(&pool).await;

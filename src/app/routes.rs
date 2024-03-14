@@ -1,7 +1,29 @@
-use super::handlers::hello_handler;
-use axum::{response::Html, routing::get, Router};
+use super::handlers::{
+    health_check_handler, js_callback_handler, page_callback_handler, payload_handler,
+    screenshot_handler,
+};
+use crate::API_BASE_PATH;
+use axum::{
+    response::Html,
+    routing::{get, post},
+    Router,
+};
 
 pub fn create_routes() -> Router {
-    let app = Router::new().route("/", get(hello_handler));
-    app
+    let routes = Router::new()
+        .route("/page_callback", post(page_callback_handler))
+        .route("/js_callback", post(js_callback_handler))
+        .route("/screenshots/:screenshotFilename", get(screenshot_handler))
+        .route("/health", get(health_check_handler))
+        .route("/", get(payload_handler))
+        .route("/:probe_id", get(payload_handler));
+    routes
+}
+
+pub fn create_api_routes() -> Router {
+    // let api = Router::new().route("/admin", );
+    let routes = Router::new()
+        .nest(API_BASE_PATH, create_routes())
+        .route("/", get(|| async { Html("Correlation API".to_string()) }));
+    routes
 }

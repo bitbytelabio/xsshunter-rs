@@ -36,7 +36,10 @@ pub async fn run() {
 
     db::initialize_database(&pool).await;
 
-    let app = routes::create_routes();
+    let app = Router::new()
+        .with_state(pool)
+        .merge(routes::create_routes())
+        .merge(routes::create_api_routes());
 
     match axum::serve(listener, app).await {
         Ok(_) => {}

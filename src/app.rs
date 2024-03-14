@@ -33,9 +33,22 @@ pub async fn run() {
     // let mut app = App::new().await.expect("Failed to create app");
 
     let address = env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
-    let listener = TcpListener::bind(address).await.unwrap();
 
-    let pool = db::create_connection_pool().await.unwrap();
+    let listener = match TcpListener::bind(address).await {
+        Ok(listener) => listener,
+        Err(e) => {
+            eprintln!("Failed to bind to address: {:?}", e);
+            std::process::exit(1);
+        }
+    };
+
+    let pool = match db::create_connection_pool().await {
+        Ok(pool) => pool,
+        Err(e) => {
+            eprintln!("Failed to create connection pool: {:?}", e);
+            std::process::exit(1);
+        }
+    };
 
     db::initialize_database(&pool).await;
 
@@ -43,9 +56,13 @@ pub async fn run() {
         .route("/hello", routing::get(hello_world))
         .with_state(pool.clone());
 
-    axum::serve(listener, router)
-        .await
-        .expect("Server failed to start");
+    match axum::serve(listener, router).await {
+        Ok(_) => {}
+        Err(e) => {
+            eprintln!("Error running server: {:?}", e);
+            std::process::exit(1);
+        }
+    }
 }
 
 async fn hello_world() -> &'static str {

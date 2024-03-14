@@ -8,3 +8,8 @@ DATABASE_URL
 MAX_DB_CONNECTIONS
 CONFIG_DIR
 ``` 
+
+```http
+GET http://localhost:3000/hello HTTP/1.1
+content-type: application/json
+```

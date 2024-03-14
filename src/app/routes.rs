@@ -5,7 +5,7 @@ use super::handlers::{
 use crate::API_BASE_PATH;
 use axum::{
     response::Html,
-    routing::{get, post},
+    routing::{delete, get, post, put},
     Router,
 };
 
@@ -21,9 +21,23 @@ pub fn create_routes() -> Router {
 }
 
 pub fn create_api_routes() -> Router {
-    // let api = Router::new().route("/admin", );
-    let routes = Router::new()
-        .nest(API_BASE_PATH, create_routes())
-        .route("/", get(|| async { Html("Correlation API".to_string()) }));
+    let api = Router::new()
+        .route(
+            "/admin",
+            get(|| async { Html("Correlation API".to_string()) }),
+        )
+        .route(
+            "login",
+            get(|| async { Html("Correlation API".to_string()) }),
+        )
+        .route(
+            "auth-check",
+            get(|| async { Html("Correlation API".to_string()) }),
+        )
+        .route(
+            "payloadfires",
+            get(|| async { Html("Correlation API".to_string()) }),
+        );
+    let routes = Router::new().nest(API_BASE_PATH, api);
     routes
 }

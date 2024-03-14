@@ -10,6 +10,6 @@ CONFIG_DIR
 ``` 
 
 ```http
-GET http://localhost:3000/hello HTTP/1.1
+GET http://localhost:3000/ HTTP/1.1
 content-type: application/json
 ```

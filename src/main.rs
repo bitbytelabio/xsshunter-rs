@@ -30,4 +30,5 @@ lazy_static::lazy_static!(
 async fn main() {
     dotenv::dotenv().ok();
     logs::start_logging();
+    app::run().await;
 }

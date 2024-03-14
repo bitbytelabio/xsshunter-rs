@@ -12,41 +12,42 @@ mod routes;
 pub struct App {
     pub screenshots_dir: String,
     pub screenshot_filename_regex: Regex,
-    listener: TcpListener,
-    router: Router,
-    pool: sqlx::PgPool,
 }
 
 impl App {
     pub async fn new() -> Result<Self> {
-        let address = env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
-        let listener = TcpListener::bind(address).await?;
         let screenshots_dir =
             env::var("SCREENSHOTS_DIR").unwrap_or_else(|_| "screenshots".to_string());
         let screenshot_filename_regex = Regex::new(
             r"^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}\.png$",
         )?;
-        let pool = db::create_connection_pool().await?;
-
-        db::initialize_database(&pool).await;
-
-        let router = Router::new().with_state(pool.clone());
 
         Ok(Self {
             screenshots_dir,
             screenshot_filename_regex,
-            listener,
-            router,
-            pool,
         })
     }
+}
 
-    pub async fn run(self) {
-        let router = self.router;
-        let listener = self.listener;
+pub async fn run() {
+    // let mut app = App::new().await.expect("Failed to create app");
 
-        axum::serve(listener, router)
-            .await
-            .expect("Server failed to start");
-    }
+    let address = env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
+    let listener = TcpListener::bind(address).await.unwrap();
+
+    let pool = db::create_connection_pool().await.unwrap();
+
+    db::initialize_database(&pool).await;
+
+    let router = Router::new()
+        .route("/hello", routing::get(hello_world))
+        .with_state(pool.clone());
+
+    axum::serve(listener, router)
+        .await
+        .expect("Server failed to start");
+}
+
+async fn hello_world() -> &'static str {
+    "Hello, World!"
 }

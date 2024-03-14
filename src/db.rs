@@ -119,7 +119,7 @@ pub async fn initialize_database(pool: &PgPool) {
         .expect("Failed to run migrations");
 
     match initialize_configs(&pool).await {
-        Ok(_) => info!("Session secret generated successfully!"),
+        Ok(_) => {}
         Err(e) => {
             error!("Error generating session secret: {:?}", e);
             exit(1)
@@ -127,7 +127,7 @@ pub async fn initialize_database(pool: &PgPool) {
     }
 
     match initialize_correlation_api(&pool).await {
-        Ok(_) => info!("Correlation API secret generated successfully!"),
+        Ok(_) => {}
         Err(e) => {
             error!("Error generating correlation API secret: {:?}", e);
             exit(1)
@@ -135,7 +135,7 @@ pub async fn initialize_database(pool: &PgPool) {
     }
 
     match initialize_users(&pool).await {
-        Ok(_) => info!("Admin user generated successfully!"),
+        Ok(_) => {}
         Err(e) => {
             error!("Error generating admin user: {:?}", e);
             exit(1)

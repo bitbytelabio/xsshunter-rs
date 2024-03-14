@@ -1,7 +1,7 @@
 use crate::db::collected_pages;
 use axum::{
     extract::{Path, State},
-    http::{header, Response, StatusCode},
+    http::{header, HeaderMap, HeaderValue, Response, StatusCode},
     Json,
 };
 use serde::{Deserialize, Serialize};
@@ -63,7 +63,8 @@ pub async fn screenshot_handler(Path(screenshot_file_name): Path<String>) -> &'s
     "Screenshot"
 }
 
-pub async fn health_check_handler() -> &'static str {
+pub async fn health_check_handler(headers: HeaderMap) -> &'static str {
+    dbg!(headers);
     "Health check"
 }
 

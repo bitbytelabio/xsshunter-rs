@@ -27,3 +27,8 @@ content-type: application/json
 GET http://localhost:3000/screenshots/11111 HTTP/1.1
 content-type: application/json
 ```
+
+```http
+GET http://localhost:3000/health HTTP/1.1
+content-type: application/json
+```

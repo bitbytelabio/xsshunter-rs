@@ -22,3 +22,8 @@ content-type: application/json
     "html": "hello"
 }
 ```
+
+```http
+GET http://localhost:3000/screenshots/11111 HTTP/1.1
+content-type: application/json
+```

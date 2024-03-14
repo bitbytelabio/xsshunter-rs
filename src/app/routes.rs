@@ -14,7 +14,10 @@ pub fn create_routes() -> Router<PgPool> {
     let routes = Router::new()
         .route("/page_callback", post(page_callback_handler))
         .route("/js_callback", post(js_callback_handler))
-        .route("/screenshots/:screenshotFilename", get(screenshot_handler))
+        .route(
+            "/screenshots/:screenshot_file_name",
+            get(screenshot_handler),
+        )
         .route("/health", get(health_check_handler))
         .route("/", get(payload_handler))
         .route("/:probe_id", get(payload_handler));

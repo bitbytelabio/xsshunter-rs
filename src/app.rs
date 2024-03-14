@@ -1,9 +1,13 @@
 use crate::{db, errors::Result};
+use axum::routing;
 use axum::Router;
 use regex::Regex;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 use tokio::net::TcpListener;
+
+mod handlers;
+mod routes;
 
 pub struct App {
     pub screenshots_dir: String,
@@ -26,11 +30,13 @@ impl App {
 
         db::initialize_database(&pool).await;
 
+        let router = Router::new().with_state(pool.clone());
+
         Ok(Self {
             screenshots_dir,
             screenshot_filename_regex,
             listener,
-            router: Router::new(),
+            router,
             pool,
         })
     }

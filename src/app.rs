@@ -14,12 +14,6 @@ use self::handlers::page_callback_handler;
 mod handlers;
 mod routes;
 
-lazy_static::lazy_static!(
-    static ref SCREENSHOTS_DIR: String = env::var("SCREENSHOTS_DIR").unwrap_or_else(|_| "screenshots".to_string());
-    static ref SCREENSHOT_FILENAME_REGEX: Regex = Regex::new(r"^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}\.png$")
-        .expect("Failed to create screenshot filename regex");
-);
-
 pub async fn run() {
     let address = env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
 

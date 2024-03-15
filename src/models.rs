@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::prelude::*;
 use uuid::Uuid;
 
@@ -38,4 +38,26 @@ pub struct PayloadFireResult {
     pub screenshot_id: String,
     pub was_iframe: bool,
     pub browser_timestamp: i64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CollectedPagesCallbackArgs {
+    pub uri: String,
+    pub html: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct JSCallbackArgs {
+    pub uri: String,
+    pub cookies: String,
+    pub referrer: String,
+    pub user_agent: String,
+    pub browser_time: String,
+    pub probe_uid: String,
+    pub origin: String,
+    pub injection_kind: String,
+    pub title: String,
+    pub text: String,
+    pub was_iframe: bool,
+    pub dom: String,
 }

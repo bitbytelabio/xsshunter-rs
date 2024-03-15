@@ -1,27 +1,27 @@
-use crate::db::collected_pages;
+use std::fs;
+
+use crate::{
+    db::collected_pages,
+    models::{CollectedPagesCallbackArgs, JSCallbackArgs},
+    SCREENSHOTS_DIR,
+};
 use axum::{
-    extract::{Path, State},
+    body,
+    extract::{multipart, Multipart, Path, State},
     http::{header, HeaderMap, HeaderValue, Response, StatusCode},
     Json,
 };
+use axum_macros::debug_handler;
+use flate2::bufread::GzEncoder;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct CollectedPagesCallbackArgs {
-    pub uri: String,
-    pub html: String,
-}
-
-#[derive(Debug, Serialize)]
-pub struct Status {
-    pub status: String,
-}
+use std::path::Path as FilePath;
+use uuid::Uuid;
 
 pub async fn page_callback_handler(
     State(pool): State<PgPool>,
     Json(body): Json<CollectedPagesCallbackArgs>,
-) -> Result<Json<Status>, (StatusCode, String)> {
+) -> Result<String, (StatusCode, String)> {
     collected_pages::create(&pool, &body.uri, &body.html)
         .await
         .map_err(|e| {
@@ -31,31 +31,30 @@ pub async fn page_callback_handler(
             )
         })?;
 
-    let mut response = Response::new(Json(Status {
-        status: "OK".into(),
-    }));
-    // response
-    //     .headers_mut()
-    //     .insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
-    // response.headers_mut().insert(
-    //     header::ACCESS_CONTROL_ALLOW_METHODS,
-    //     "POST, OPTIONS".parse().unwrap(),
-    // );
-    // response.headers_mut().insert(
-    //     header::ACCESS_CONTROL_ALLOW_HEADERS,
-    //     "Content-Type, X-Requested-With".parse().unwrap(),
-    // );
-    // response
-    //     .headers_mut()
-    //     .insert(header::ACCESS_CONTROL_MAX_AGE, "86400".parse().unwrap());
-
-    Ok(Json(Status {
-        status: "OK".into(),
-    }))
+    Ok("OK".to_string())
 }
 
-pub async fn js_callback_handler() -> &'static str {
-    "JS callback"
+#[debug_handler]
+pub async fn js_callback_handler(
+    State(pool): State<PgPool>,
+    Json(body): Json<JSCallbackArgs>,
+) -> Result<String, (StatusCode, String)> {
+    let payload_fire_image_id = Uuid::new_v4();
+    let payload_fire_image_filename = format!(
+        "${}/${payload_fire_image_id}.png.gz",
+        SCREENSHOTS_DIR.to_string()
+    );
+    // let multer_temp_image_path =
+    let payload_fire_id = Uuid::new_v4();
+
+    Ok("OK".to_string())
+}
+
+pub async fn image_callback_handler(
+    mut multipart: Multipart,
+) -> Result<String, (StatusCode, String)> {
+    while let Some(field) = multipart.next_field().await.unwrap() {}
+    Ok("OK".to_string())
 }
 
 pub async fn screenshot_handler(Path(screenshot_file_name): Path<String>) -> &'static str {

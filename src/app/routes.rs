@@ -28,11 +28,11 @@ pub fn create_routes() -> Router<PgPool> {
         .max_age(Duration::from_secs(86400));
 
     let callback_router = Router::new()
-        .route("/js_callback", get(test).post(js_callback_handler))
         .route(
-            "/page_callback",
-            post(page_callback_handler).post(image_callback_handler),
+            "/js_callback",
+            post(js_callback_handler).post(image_callback_handler),
         )
+        .route("/page_callback", post(page_callback_handler))
         .layer(callback_cors)
         .layer(DefaultBodyLimit::disable())
         .layer(RequestBodyLimitLayer::new(
@@ -51,8 +51,6 @@ pub fn create_routes() -> Router<PgPool> {
         .route("/:probe_id", get(payload_handler));
     routes
 }
-
-async fn test() {}
 
 pub fn create_api_routes() -> Router {
     let api = Router::new()

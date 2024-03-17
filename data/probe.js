@@ -183,7 +183,7 @@ function send_collected_page(page_data) {
 
 function collect_page_data(path) {
     try {
-        var full_url = location.protocol + "//" + document.domain + path
+        var full_url = location.protocol + "//" + window.location.host + path
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (xhr.readyState == XMLHttpRequest.DONE) {

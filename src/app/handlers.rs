@@ -39,11 +39,6 @@ pub async fn js_callback_handler(
     State(pool): State<PgPool>,
     Json(body): Json<JSCallbackArgs>,
 ) -> Result<String, (StatusCode, String)> {
-    let payload_fire_image_id = Uuid::new_v4();
-    let payload_fire_image_filename = format!(
-        "${}/${payload_fire_image_id}.png.gz",
-        SCREENSHOTS_DIR.to_string()
-    );
     // let multer_temp_image_path =
     let payload_fire_id = Uuid::new_v4();
 
@@ -51,9 +46,20 @@ pub async fn js_callback_handler(
 }
 
 pub async fn image_callback_handler(
+    State(pool): State<PgPool>,
     mut multipart: Multipart,
 ) -> Result<String, (StatusCode, String)> {
-    while let Some(field) = multipart.next_field().await.unwrap() {}
+    let payload_fire_image_id = Uuid::new_v4();
+    let payload_fire_image_filename = format!(
+        "${}/${payload_fire_image_id}.png.gz",
+        SCREENSHOTS_DIR.to_string()
+    );
+    while let Some(field) = multipart.next_field().await.map_err(|e| {
+        (
+            StatusCode::BAD_REQUEST,
+            format!("Failed to load image: {:?}", e),
+        )
+    })? {}
     Ok("OK".to_string())
 }
 

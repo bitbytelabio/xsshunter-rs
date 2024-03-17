@@ -12,6 +12,8 @@ pub enum Error {
     Regex(#[from] regex::Error),
     #[error("Parse int error: {0}")]
     Parse(#[from] std::num::ParseIntError),
+    #[error("Parse multipart error: {0}")]
+    Multipart(#[from] axum::extract::multipart::MultipartError),
     #[error("Error: {0}")]
     Other(String),
 }

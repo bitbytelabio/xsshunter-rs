@@ -45,8 +45,9 @@ pub async fn js_callback_handler(
     Ok("OK".to_string())
 }
 
+#[debug_handler]
 pub async fn image_callback_handler(
-    State(pool): State<PgPool>,
+    // State(pool): State<PgPool>,
     mut multipart: Multipart,
 ) -> Result<String, (StatusCode, String)> {
     let payload_fire_image_id = Uuid::new_v4();

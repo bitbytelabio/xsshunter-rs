@@ -12,9 +12,12 @@ use axum::{
     Json,
 };
 use axum_macros::debug_handler;
-use flate2::bufread::GzEncoder;
+use flate2::write::GzEncoder;
+use flate2::Compression;
+use minio::Minio;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use std::io::Write;
 use std::path::Path as FilePath;
 use uuid::Uuid;
 
@@ -47,7 +50,7 @@ pub async fn js_callback_handler(
 
 #[debug_handler]
 pub async fn image_callback_handler(
-    // State(pool): State<PgPool>,
+    State(pool): State<PgPool>,
     mut multipart: Multipart,
 ) -> Result<String, (StatusCode, String)> {
     let payload_fire_image_id = Uuid::new_v4();
@@ -55,12 +58,36 @@ pub async fn image_callback_handler(
         "${}/${payload_fire_image_id}.png.gz",
         SCREENSHOTS_DIR.to_string()
     );
-    while let Some(field) = multipart.next_field().await.map_err(|e| {
+
+    // let mut s3_client = Minio::new("localhost:9000", "minioadmin", "minioadmin").unwrap();
+    // s3_client = s3_client.with_secure(false);
+
+    while let Some(mut field) = multipart.next_field().await.map_err(|e| {
         (
             StatusCode::BAD_REQUEST,
             format!("Failed to load image: {:?}", e),
         )
-    })? {}
+    })? {
+        let mut data = Vec::new();
+        while let Some(chunk) = field.chunk().await.map_err(|e| {
+            (
+                StatusCode::BAD_REQUEST,
+                format!("Failed to read chunk: {:?}", e),
+            )
+        })? {
+            data.extend_from_slice(&chunk);
+        }
+
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(&data).unwrap();
+        let compressed_data = encoder.finish().unwrap();
+
+        // s3_client
+        //     .put_object("my-bucket", &payload_fire_image_filename, &compressed_data)
+        //     .await
+        //     .unwrap();
+    }
+
     Ok("OK".to_string())
 }
 

@@ -55,9 +55,10 @@ pub struct JSCallbackArgs {
     pub browser_time: String,
     pub probe_uid: String,
     pub origin: String,
-    pub injection_kind: String,
+    pub injection_key: String,
     pub title: String,
     pub text: String,
     pub was_iframe: bool,
     pub dom: String,
+    pub Screenshot: String,
 }

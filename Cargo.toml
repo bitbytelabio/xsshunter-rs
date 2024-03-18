@@ -33,6 +33,7 @@ config = "0.14.0"
 axum-extra = { version = "0.9.2", features = ["typed-header"] }
 flate2 = "1.0.28"
 axum-macros = "0.4.1"
+minio = "0.1.0"
 
 [dev-dependencies]
 test-log = { version = "0.2.15", features = ["trace", "tracing-subscriber"] }

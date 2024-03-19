@@ -1,13 +1,13 @@
 use std::time::Duration;
 
 use super::handlers::{
-    health_check_handler, image_callback_handler, js_callback_handler, page_callback_handler,
-    payload_handler, screenshot_handler,
+    health_check_handler, js_callback_handler, page_callback_handler, payload_handler,
+    screenshot_handler,
 };
 use crate::API_BASE_PATH;
 use axum::{
     extract::DefaultBodyLimit,
-    http::{HeaderName, Method},
+    http::{HeaderMap, HeaderName, Method},
     response::Html,
     routing::{delete, get, post, put},
     Router,
@@ -21,10 +21,7 @@ pub fn create_routes() -> Router<PgPool> {
     let callback_cors = CorsLayer::new()
         .allow_methods([Method::POST, Method::OPTIONS])
         .allow_origin(Any)
-        // .allow_headers([
-        // HeaderName::from_static("Content-Type"),
-        // HeaderName::from_static("X-Requested-With"),
-        // ])
+        // .allow_headers([HeaderName::from_static("content-type")])
         .max_age(Duration::from_secs(86400));
 
     let callback_router = Router::new()

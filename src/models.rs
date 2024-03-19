@@ -60,5 +60,5 @@ pub struct JSCallbackArgs {
     pub text: String,
     pub was_iframe: bool,
     pub dom: String,
-    pub Screenshot: String,
+    pub screenshot: String,
 }

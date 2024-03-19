@@ -35,6 +35,6 @@ lazy_static::lazy_static!(
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
-    logs::start_logging();
+    // logs::start_logging();
     app::run().await;
 }

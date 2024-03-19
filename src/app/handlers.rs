@@ -11,7 +11,7 @@ use axum::{
     http::{header, HeaderMap, HeaderValue, Response, StatusCode},
     Json,
 };
-use axum_macros::debug_handler;
+// use axum_macros::debug_handler;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use serde::{Deserialize, Serialize};
@@ -36,7 +36,7 @@ pub async fn page_callback_handler(
     Ok("OK".to_string())
 }
 
-#[debug_handler]
+// #[debug_handler]
 pub async fn js_callback_handler(
     State(pool): State<PgPool>,
     Json(body): Json<JSCallbackArgs>,
@@ -47,9 +47,9 @@ pub async fn js_callback_handler(
     Ok("OK".to_string())
 }
 
-#[debug_handler]
+// #[debug_handler]
 pub async fn image_callback_handler(
-    State(pool): State<PgPool>,
+    // State(pool): State<PgPool>,
     mut multipart: Multipart,
 ) -> Result<String, (StatusCode, String)> {
     let payload_fire_image_id = Uuid::new_v4();

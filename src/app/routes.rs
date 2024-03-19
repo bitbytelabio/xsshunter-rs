@@ -21,17 +21,14 @@ pub fn create_routes() -> Router<PgPool> {
     let callback_cors = CorsLayer::new()
         .allow_methods([Method::POST, Method::OPTIONS])
         .allow_origin(Any)
-        .allow_headers([
-            HeaderName::from_static("Content-Type"),
-            HeaderName::from_static("X-Requested-With"),
-        ])
+        // .allow_headers([
+        // HeaderName::from_static("Content-Type"),
+        // HeaderName::from_static("X-Requested-With"),
+        // ])
         .max_age(Duration::from_secs(86400));
 
     let callback_router = Router::new()
-        .route(
-            "/js_callback",
-            post(js_callback_handler).post(image_callback_handler),
-        )
+        .route("/js_callback", post(js_callback_handler))
         .route("/page_callback", post(page_callback_handler))
         .layer(callback_cors)
         .layer(DefaultBodyLimit::disable())

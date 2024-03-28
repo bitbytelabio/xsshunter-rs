@@ -1,0 +1,2 @@
+db:
+    sqlx migrate run
